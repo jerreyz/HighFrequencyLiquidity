@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 
 
-
-
-
 def Garman_Class_Volatility_estimator(x):
     #input One Subinterval of High Frequency Data
     result=(0.5*np.log(x.max()/x.min())**2)-(2*np.log(2)-1)*np.log(x.head(1).iloc[0,0]/x.tail(1).iloc[0,0])**2
@@ -83,3 +80,15 @@ def support_level(x,col_bids,crash_sellof_amount):
         return breach
     else:
         return np.nan
+    
+    
+    
+def Aggresive_Orderflow_imbalance(Data,col_buysell,col_price,col_amount,Frequency):
+     """
+    input Data :Dataframe holding Trade data with price , amount  and a classifier if it is a market buy or sell
+          Frequency: The frequency on which the aggresive order flow imbalance should be aggregated. e.g. 4H
+    """
+    Data=Data.assign(Agressive_OBF=lambda x: x[col_amount]*x[col_buysell])
+    Data=Data.assign(Agressive_OBF_dollar=lambda x: x[col_amount]*x[col_buysell]*x[col_price])
+    result=Data[["Agressive_OBF","Agressive_OBF_dollar"]].groupby(pd.Grouper(freq=Frequency)).sum()
+    return result
