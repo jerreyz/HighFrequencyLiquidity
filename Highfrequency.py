@@ -68,3 +68,18 @@ def TradeDirection(Data,col_ASKS,col_BIDS,col_price):
     Data.loc[Data["BUY"]==False,"BUY"]=-1.
 
     return Data
+
+def support_level(x,col_bids,crash_sellof_amount):
+    """
+    input x                  :Dask Bag with mapped Json load function
+          col_bids           : name of the bids in the json file
+          crash_sellof_amount: Amount of bitcoins that needs to be sold to be considered a crash e.g if 40 000 bitcoins are sold price drops so hard that is considered a crash
+    """
+    dataframe=pd.dataframe(x[col_bids])
+    dataframe=dataframe.iloc[::-1]
+    dataframe["cumvolume"]=dataframe["amount"].cumsum()
+    if dataframe.loc[dataframe["cumvolume"]>=crash_sellof_amount].any().any():
+        breach=dataframe[dataframe["cumvolume"]>=crash_sellof_amount]["price"].iloc[0]
+        return breach
+    else:
+        return np.nan
